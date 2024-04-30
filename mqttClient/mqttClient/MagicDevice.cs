@@ -1,6 +1,6 @@
 ﻿namespace mqttClient
 {
-    public class MagicDevice
+    public class MagicDevice : IMagicDevice
     {
         public bool Running { get; private set; }
         public int Id { get; set; }
@@ -10,7 +10,8 @@
         public double Temperature { get; private set; }
         public double Humidity { get; private set; }
 
-        public MagicDevice(int Id) {
+        public MagicDevice(int id) {
+            Id = id;
             Name = $"MagicDevice-{Id}";
             Speed = new Random().NextDouble() * 30;
             Battery = 100;
@@ -22,8 +23,8 @@
         {
             if (!Running) return this;
 
-            Battery -= new Random().NextDouble();
-            Speed += GetRangeValue(-1, 1);
+            Battery -= new Random().NextDouble() * 0.1;
+            Speed += GetRangeValue(-0.5, 1);
             Temperature += GetRangeValue(-0.1, 0.5);
             Humidity += GetRangeValue(-0.2, 0.2);
 

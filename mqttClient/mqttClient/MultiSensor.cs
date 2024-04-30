@@ -1,12 +1,13 @@
 ﻿using HiveMQtt.Client;
 using HiveMQtt.Client.Events;
 using HiveMQtt.Client.Options;
-
+using HiveMQtt.MQTT5.Types;
+using System.Collections.Concurrent;
 using System.Text.Json;
 
 namespace mqttClient
 {
-    public record MqttCommand(string Command, int SensorId);
+    
 
 
 
@@ -18,7 +19,7 @@ namespace mqttClient
         private string? _host;
         private int? _port;
         private string _topic = string.Empty;
-        private readonly List<MagicDevice> _magicDevices;
+        private readonly ConcurrentDictionary<int, MagicDevice> _magicDevices;
         private readonly System.Timers.Timer _timer;
 
 
@@ -26,7 +27,7 @@ namespace mqttClient
 
         public MultiSensor()
         {
-            _magicDevices = new List<MagicDevice>();
+            _magicDevices = [];
             _timer = new System.Timers.Timer(1000)
             {
                 AutoReset = true,
@@ -40,37 +41,38 @@ namespace mqttClient
         private async void UpdateValues(object? sender, System.Timers.ElapsedEventArgs e)
         {
             if (_mqttClient == null) return;
-            foreach (var device in _magicDevices)
+            foreach (var device in _magicDevices.Values)
                 if (device.Running)
-                    await _mqttClient.PublishAsync($"{_topic}/{device.Name}", JsonSerializer.Serialize(device), HiveMQtt.MQTT5.Types.QualityOfService.ExactlyOnceDelivery); 
+                    await _mqttClient.PublishAsync($"{_topic}/{device.Name}", JsonSerializer.Serialize(device.Read()), QualityOfService.ExactlyOnceDelivery); 
         }
 
-        public void AddSensor(int sensorId)
+        public async void AddSensor(int sensorId)
         {
-            if (_magicDevices.FirstOrDefault(item => item.Id == sensorId) != null) return;
-            _magicDevices.Add(new MagicDevice(sensorId));
+            if (_magicDevices.ContainsKey(sensorId)) return;
+            var sensor = new MagicDevice(sensorId);
+            _magicDevices.TryAdd(sensorId, sensor);
+            if (_mqttClient == null) return;
+            await _mqttClient.PublishAsync($"{_topic}/{sensor.Name}", JsonSerializer.Serialize(sensor.Read()), QualityOfService.ExactlyOnceDelivery);
         }
 
         public void RemoveSensor(int sensorId)
         {
-            var deviceToRemove = _magicDevices.FirstOrDefault(item => item.Id == sensorId);
-            if (deviceToRemove == null) return;
-            _magicDevices.Remove(deviceToRemove);
+            if (!_magicDevices.ContainsKey(sensorId)) return;
+           
+            _magicDevices.TryRemove(sensorId, out var _);
         }
 
         public void Start(int sensorId)
         {
-            var device = _magicDevices.FirstOrDefault(item => item.Id == sensorId);
-            if (device == null) return;
-            device.Start() ;
+            if (!_magicDevices.ContainsKey(sensorId)) return;
+            _magicDevices[sensorId].Start() ;
 
         }
 
         public void Stop(int sensorId)
         {
-            var device = _magicDevices.FirstOrDefault(item => item.Id == sensorId);
-            if (device == null) return;
-            device.Stop();
+            if (!_magicDevices.ContainsKey(sensorId)) return;
+            _magicDevices[sensorId].Stop();
         }
 
         public async Task Connect(string host, int port, string topic)
@@ -93,9 +95,20 @@ namespace mqttClient
             var connectResult = await _mqttClient.ConnectAsync().ConfigureAwait(false);
         }
 
-        private void HandleConnected(object? sender, OnConnAckReceivedEventArgs e)
+        private async Task Subsribe()
         {
-            Console.WriteLine($"Connected to server {_host}:{_port} {e.ConnAckPacket.ReasonCode} {e.ConnAckPacket.AckFlags} {e.ConnAckPacket.ControlPacketType}"); ;
+            if (_mqttClient == null) return;
+            var builder = new SubscribeOptionsBuilder();
+            builder.WithSubscription($"{_topic}/{CommandKeyWord}", QualityOfService.ExactlyOnceDelivery);
+
+            var subscribeOptions = builder.Build();
+            var subscribeResult = await _mqttClient.SubscribeAsync(subscribeOptions);
+        }
+
+        private async void HandleConnected(object? sender, OnConnAckReceivedEventArgs e)
+        {
+            Console.WriteLine($"Connected to server {_host}:{_port} {e.ConnAckPacket.ReasonCode} {e.ConnAckPacket.AckFlags} {e.ConnAckPacket.ControlPacketType}");
+            await Subsribe();
         }
 
         private void HandleConnecting(object? sender, OnConnectSentEventArgs e)
@@ -115,7 +128,7 @@ namespace mqttClient
             if (string.IsNullOrEmpty(_topic) || string.IsNullOrEmpty(topic) || message == null || !topic.Contains(_topic))
                 return;
 
-            if(!_topic.Contains(CommandKeyWord, StringComparison.InvariantCultureIgnoreCase))
+            if(!topic.Contains(CommandKeyWord, StringComparison.InvariantCultureIgnoreCase))
                 return;
 
             try
