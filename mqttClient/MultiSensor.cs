@@ -1,12 +1,18 @@
 ﻿using HiveMQtt.Client;
 using HiveMQtt.Client.Events;
 using HiveMQtt.Client.Options;
+
 using System.Text.Json;
 
 namespace mqttClient
 {
+    public record MqttCommand(string Command, int SensorId);
+
+
+
     public class MultiSensor
     {
+        const string CommandKeyWord = "Command";
         private HiveMQClient? _mqttClient;
         private HiveMQClientOptions? _options;
         private string? _host;
@@ -14,6 +20,9 @@ namespace mqttClient
         private string _topic = string.Empty;
         private readonly List<MagicDevice> _magicDevices;
         private readonly System.Timers.Timer _timer;
+
+
+        
 
         public MultiSensor()
         {
@@ -32,7 +41,8 @@ namespace mqttClient
         {
             if (_mqttClient == null) return;
             foreach (var device in _magicDevices)
-                await _mqttClient.PublishAsync($"{_topic}/{device.Name}", JsonSerializer.Serialize(device), HiveMQtt.MQTT5.Types.QualityOfService.ExactlyOnceDelivery);
+                if (device.Running)
+                    await _mqttClient.PublishAsync($"{_topic}/{device.Name}", JsonSerializer.Serialize(device), HiveMQtt.MQTT5.Types.QualityOfService.ExactlyOnceDelivery); 
         }
 
         public void AddSensor(int sensorId)
@@ -40,6 +50,29 @@ namespace mqttClient
             if (_magicDevices.FirstOrDefault(item => item.Id == sensorId) != null) return;
             _magicDevices.Add(new MagicDevice(sensorId));
         }
+
+        public void RemoveSensor(int sensorId)
+        {
+            var deviceToRemove = _magicDevices.FirstOrDefault(item => item.Id == sensorId);
+            if (deviceToRemove == null) return;
+            _magicDevices.Remove(deviceToRemove);
+        }
+
+        public void Start(int sensorId)
+        {
+            var device = _magicDevices.FirstOrDefault(item => item.Id == sensorId);
+            if (device == null) return;
+            device.Start() ;
+
+        }
+
+        public void Stop(int sensorId)
+        {
+            var device = _magicDevices.FirstOrDefault(item => item.Id == sensorId);
+            if (device == null) return;
+            device.Stop();
+        }
+
         public async Task Connect(string host, int port, string topic)
         {
             _host = host;
@@ -81,6 +114,44 @@ namespace mqttClient
             var topic = arg.PublishMessage.Topic;
             if (string.IsNullOrEmpty(_topic) || string.IsNullOrEmpty(topic) || message == null || !topic.Contains(_topic))
                 return;
+
+            if(!_topic.Contains(CommandKeyWord, StringComparison.InvariantCultureIgnoreCase))
+                return;
+
+            try
+            {
+                var command = JsonSerializer.Deserialize<MqttCommand>(message);
+                if (command == null) return;
+
+                switch (command.Command.ToLower()) 
+                {
+                    case "add":
+                        AddSensor(command.SensorId);
+                        break;
+
+                    case "remove":
+                        RemoveSensor(command.SensorId);
+                        break;
+
+                    case "start":
+                        Start(command.SensorId); 
+                        break;
+
+                    case "stop":
+                        Stop(command.SensorId); 
+                        break;
+
+                    default:
+                        Console.WriteLine($"Command {command.Command} is not supported");
+                        break;
+                }
+
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine($"Failed to process the received message {message}. Details {ex}");
+            }
         }
 
     }

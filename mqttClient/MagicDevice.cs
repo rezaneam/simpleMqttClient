@@ -2,7 +2,7 @@
 {
     public class MagicDevice
     {
-        public bool Runnning { get; private set; }
+        public bool Running { get; private set; }
         public int Id { get; set; }
         public string Name { get; set; }
         public double Speed { get; set; }
@@ -20,7 +20,7 @@
 
         public MagicDevice Read()
         {
-            if (!Runnning) return this;
+            if (!Running) return this;
 
             Battery -= new Random().NextDouble();
             Speed += GetRangeValue(-1, 1);
@@ -30,10 +30,13 @@
             if(Battery <0)
             {
                 Battery = 0;
-                Runnning = false;
+                Running = false;
             }
             return this;
         }
+
+        public void Start() => Running = true;
+        public void Stop() => Running = false;
 
         private double GetRangeValue(double min, double max) => ((max - min) * new Random().NextDouble()) + min;
     }
