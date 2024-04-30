@@ -30,7 +30,7 @@ namespace ControlTool.SignalR
         [HubMethodName("Add")]
         public void Add(int  id)
         {
-            _mqttService.AddSensor(id);
+            _mqttService?.AddSensor(id);
         }
     }
 }
