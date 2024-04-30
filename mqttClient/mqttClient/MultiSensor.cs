@@ -7,10 +7,6 @@ using System.Text.Json;
 
 namespace mqttClient
 {
-    
-
-
-
     public class MultiSensor
     {
         const string CommandKeyWord = "Command";
@@ -21,9 +17,6 @@ namespace mqttClient
         private string _topic = string.Empty;
         private readonly ConcurrentDictionary<int, MagicDevice> _magicDevices;
         private readonly System.Timers.Timer _timer;
-
-
-        
 
         public MultiSensor()
         {
@@ -42,8 +35,7 @@ namespace mqttClient
         {
             if (_mqttClient == null) return;
             foreach (var device in _magicDevices.Values)
-                if (device.Running)
-                    await _mqttClient.PublishAsync($"{_topic}/{device.Name}", JsonSerializer.Serialize(device.Read()), QualityOfService.ExactlyOnceDelivery); 
+                await _mqttClient.PublishAsync($"{_topic}/{device.Name}", JsonSerializer.Serialize(device.Read()), QualityOfService.ExactlyOnceDelivery); 
         }
 
         public async void AddSensor(int sensorId)
@@ -75,6 +67,7 @@ namespace mqttClient
             _magicDevices[sensorId].Stop();
         }
 
+        #region IgnoreMe
         public async Task Connect(string host, int port, string topic)
         {
             _host = host;
@@ -166,6 +159,8 @@ namespace mqttClient
                 Console.WriteLine($"Failed to process the received message {message}. Details {ex}");
             }
         }
+
+        #endregion
 
     }
 }
