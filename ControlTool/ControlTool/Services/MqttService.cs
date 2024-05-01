@@ -1,10 +1,11 @@
 ﻿using HiveMQtt.Client.Options;
 using HiveMQtt.Client;
-using Microsoft.Extensions.Hosting;
 using HiveMQtt.Client.Events;
 using System.Text.Json;
 using ControlTool.Models;
 using HiveMQtt.MQTT5.Types;
+using ControlTool.SignalR;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ControlTool.Services
 {
@@ -17,9 +18,11 @@ namespace ControlTool.Services
         private int? _port;
         private string _topic = string.Empty;
         private readonly SensorService _sensorService;
-        public MqttService(SensorService sensorService)
+        private readonly IHubContext<BaseHub, IBaseHub> _hub;
+        public MqttService(SensorService sensorService, IHubContext<BaseHub, IBaseHub> hub)
         {
             _sensorService = sensorService;
+            _hub = hub;
         }
 
         public async void Connect(string host, int port, string topic)
@@ -96,6 +99,7 @@ namespace ControlTool.Services
             if (sensorReading == null) return;
 
             _sensorService.AddSensorReading(sensorReading);
+            _hub.Clients.All.PushDeviceReading(sensorReading);
 
         }
 

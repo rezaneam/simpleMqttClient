@@ -13,6 +13,7 @@ namespace ControlTool
 
             // Add services to the container.
 
+            // Allow CORS
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll",
@@ -47,7 +48,7 @@ namespace ControlTool
 
             app.UseAuthorization();
 
-
+            app.UseCors("AllowAll");
             app.MapControllers();
             app.MapHub<BaseHub>("/hub");
             app.Services.GetRequiredService<MqttService>().Connect("broker.hivemq.com", 8883, "CodeTestMqttTopic");
