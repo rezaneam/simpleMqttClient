@@ -11,6 +11,11 @@
             client.AddSensor(10);
             client.Start(10);
 
+            client.AddSensor(5);
+            client.Start(5);
+
+            client.AddSensor(20);
+
             Console.ReadLine();
         }
     }
