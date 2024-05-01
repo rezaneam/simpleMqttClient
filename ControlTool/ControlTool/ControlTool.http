@@ -1,6 +1,0 @@
-@ControlTool_HostAddress = http://localhost:5153
-
-GET {{ControlTool_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

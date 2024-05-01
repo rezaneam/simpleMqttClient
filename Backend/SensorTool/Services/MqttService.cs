@@ -2,12 +2,12 @@
 using HiveMQtt.Client;
 using HiveMQtt.Client.Events;
 using System.Text.Json;
-using ControlTool.Models;
+using SensorTool.Models;
 using HiveMQtt.MQTT5.Types;
-using ControlTool.SignalR;
+using SensorTool.SignalR;
 using Microsoft.AspNetCore.SignalR;
 
-namespace ControlTool.Services
+namespace SensorTool.Services
 {
     public class MqttService
     {

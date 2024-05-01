@@ -1,4 +1,4 @@
-﻿namespace ControlTool.Models
+﻿namespace SensorTool.Models
 {
     public interface IMagicDevice
     {

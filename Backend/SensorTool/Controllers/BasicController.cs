@@ -1,8 +1,8 @@
-﻿using ControlTool.Models;
-using ControlTool.Services;
+﻿using SensorTool.Models;
+using SensorTool.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ControlTool.Controllers
+namespace SensorTool.Controllers
 {
     [ApiController]
     public class BasicController : ControllerBase

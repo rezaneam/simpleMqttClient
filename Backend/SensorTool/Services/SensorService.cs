@@ -1,8 +1,7 @@
-﻿using ControlTool.Models;
+﻿using SensorTool.Models;
 using System.Collections.Concurrent;
-using System.Linq;
 
-namespace ControlTool.Services
+namespace SensorTool.Services
 {
     public class SensorService
     {

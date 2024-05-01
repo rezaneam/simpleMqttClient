@@ -1,7 +1,7 @@
-﻿using ControlTool.Services;
+﻿using SensorTool.Services;
 using Microsoft.AspNetCore.SignalR;
 
-namespace ControlTool.SignalR
+namespace SensorTool.SignalR
 {
     public class BaseHub : Hub<IBaseHub>
     {

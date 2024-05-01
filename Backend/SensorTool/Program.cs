@@ -1,9 +1,7 @@
+using SensorTool.Services;
+using SensorTool.SignalR;
 
-using ControlTool.Models;
-using ControlTool.Services;
-using ControlTool.SignalR;
-
-namespace ControlTool
+namespace SensorTool
 {
     public class Program
     {
