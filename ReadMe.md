@@ -11,9 +11,9 @@ In this project Microsoft ASP.NET Core is used as Backend and React/Vite is used
 
 ## Tasks
 You can choose any of following tasks
-* Backend
+* Backend (ASP.NET C#)
     * Start sensor command
     * Stop sensor command
-* Frontend
+* Frontend (React)
     * Showing Sensor values
     * Adding a new sensor
