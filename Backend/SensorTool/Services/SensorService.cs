@@ -9,7 +9,7 @@ namespace SensorTool.Services
 
         public SensorService()
         {
-            _magicDevices = [];
+            _magicDevices = new ConcurrentDictionary<int, MagicDeviceDataModel>();
         }
 
         public void AddSensorReading(MagicDeviceDataModel sensorData)
