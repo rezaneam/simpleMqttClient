@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react'
 import { sensorReading } from './sensorReading'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import {
   HubConnection,
   HubConnectionBuilder,
