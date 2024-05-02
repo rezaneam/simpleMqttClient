@@ -98,6 +98,7 @@ namespace SensorTool.Services
 
             if (sensorReading == null) return;
 
+            Console.WriteLine($"New Measurement from Sensor {sensorReading.Name}\tID:{sensorReading.Id}\tMeasuremenrs: Temperature {sensorReading.Temperature.ToString("0.00")} Humidity: {sensorReading.Humidity.ToString("0.00")}");
             _sensorService.AddSensorReading(sensorReading);
             _hub.Clients.All.PushDeviceReading(sensorReading);
 
