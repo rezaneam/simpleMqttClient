@@ -12,6 +12,10 @@ In this project most of fundation is done meaning that, the device manager is al
 In addition there is two REST full endpoints to read device values as well as adding new device.
 On Frontend side not very much is done except establishing to the SignalR hub and listening to the messages but logging them in the console.
 
+## Requirements
+* .NET 8
+* NodeJs
+
 ## Tasks
 You can choose any of following tasks
 * Backend (ASP.NET C#)
